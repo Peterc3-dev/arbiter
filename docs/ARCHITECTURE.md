@@ -1,10 +1,14 @@
-# Arbiter Architecture Specification
+# Arbiter OS — Architecture Specification
+
+## A Distributed Inference Operating System
 
 ## Overview
 
-Arbiter is a distributed command fabric for CIN (Centralized Inference Network). This
-document provides the complete technical architecture, including data flow, component
-interactions, and implementation details for all phases.
+Arbiter OS is a distributed inference operating system that manages AI compute
+across a mesh of heterogeneous devices. The core resource being managed is
+**inference** — the act of a trained model generating output from input. Just as
+a traditional OS abstracts CPU cycles and memory allocation, Arbiter OS abstracts
+which node, which model, and which compute backend runs each inference task.
 
 ---
 

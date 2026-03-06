@@ -1,8 +1,6 @@
 """
-ARBITER OS v0.2 — Distributed Intelligence Operating System
-Autonomous Routing, Bridging, and Inference Topology for Engineered Reasoning
-
-Intelligence shell for CIN (Centralized Inference Network)
+ARBITER OS v0.2 — A Distributed Inference Operating System
+Every device is a node. Every node is aware. The mesh is the OS.
 """
 
 from __future__ import annotations

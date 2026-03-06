@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "arbiter-os"
 version = "0.2.0"
-description = "Arbiter OS — Distributed Intelligence Operating System for Personal AI Infrastructure"
+description = "Arbiter OS — A Distributed Inference Operating System"
 requires-python = ">=3.11"
 dependencies = [
     "textual>=0.47.0",

@@ -1,13 +1,12 @@
-# ARBITER
+# ARBITER OS
 
-### Autonomous Routing, Bridging, and Inference Topology for Engineered Reasoning
+### A Distributed Inference Operating System
 
 > *"When the Arbiter was shamed, he didn't disappear — he became the blade that cut through the lie."*
 >
 > Named for the Sangheili warrior who broke from the Covenant's dogma to forge an alliance with
-> humanity's greatest soldier, Arbiter is a distributed AI agent that exists across machines — not
-> on them. It is the command fabric of CIN (Centralized Inference Network), aware of every node's
-> hardware, every model's strengths, and every task's requirements.
+> humanity's greatest soldier, Arbiter OS is a distributed inference operating system that exists
+> across machines — not on them. Every device is a node. Every node is aware. The mesh is the OS.
 
 ---
 
