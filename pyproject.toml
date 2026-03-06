@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arbiter"
+version = "0.1.0"
+description = "Autonomous Routing, Bridging, and Inference Topology for Engineered Reasoning"
+requires-python = ">=3.11"
+dependencies = [
+    "textual>=0.47.0",
+    "rich>=13.0",
+]
+
+[project.scripts]
+arbiter = "arbiter_core.app:main"
+
+[tool.setuptools.packages.find]
+include = ["arbiter_core*"]

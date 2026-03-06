@@ -1,0 +1,26 @@
+[node]
+name = "thinkcentre"
+hostname = "thinkcentre.tail"
+role = "inference-hub"
+description = "Always-on agent hub — persistent background automation"
+
+[hardware]
+cpu = "Intel Core i5-13500T"
+ram_gb = 16
+gpu = "none"
+compute_backend = "cpu"
+
+[models]
+available = ["qwen2.5:7b", "phi4:mini", "deepseek-r1:14b"]
+default = "qwen2.5:7b"
+ollama_api = "http://localhost:11434"
+
+[cloud_models]
+kimi_2_5 = { name = "Kimi 2.5", relay = "openclaw", status = "active" }
+
+[services]
+tailscale = true
+syncthing = true
+ssh = true
+openclaw = true
+proton_vpn = true

@@ -1,0 +1,27 @@
+[node]
+name = "gpd-pocket-4"
+hostname = "gpd.tail"
+role = "dev-workstation"
+description = "Active development workstation — Claude Code, hands-on work"
+
+[hardware]
+cpu = "AMD Ryzen AI 9 HX 370"
+ram_gb = 32
+gpu = "AMD Radeon 890M (iGPU)"
+gpu_arch = "gfx1150"
+compute_backend = "vulkan"
+compute_notes = "ROCm no native gfx1150 support — use OLLAMA_VULKAN=1"
+
+[models]
+available = []
+default = ""
+ollama_api = "http://localhost:11434"
+notes = "Primary LLM work migrated to ThinkCentre; GPU for inference-appliance future phase"
+
+[tools]
+claude_code = true
+
+[services]
+tailscale = true
+syncthing = true
+ssh = true

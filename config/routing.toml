@@ -1,0 +1,47 @@
+# Arbiter Routing Rules
+# task_type → model + node selection with fallback chains
+
+[[rule]]
+task_type = "code_transform"
+description = "Refactoring, formatting, linting, code translation"
+prefer_model = "qwen2.5:7b"
+prefer_node = "thinkcentre"
+fallback = ["phi4:mini@thinkcentre"]
+
+[[rule]]
+task_type = "creative_writing"
+description = "Voice, personality, idiomatic text, marketing copy"
+prefer_model = "kimi-2.5"
+prefer_node = "thinkcentre"
+via = "openclaw"
+fallback = ["qwen2.5:7b@thinkcentre"]
+
+[[rule]]
+task_type = "deep_reasoning"
+description = "Complex logic, math, multi-step analysis"
+prefer_model = "deepseek-r1:14b"
+prefer_node = "thinkcentre"
+timeout_s = 120
+fallback = ["qwen2.5:7b@thinkcentre"]
+
+[[rule]]
+task_type = "speed_task"
+description = "Quick lookups, simple generation, low-latency needs"
+prefer_model = "phi4:mini"
+prefer_node = "thinkcentre"
+fallback = ["qwen2.5:7b@thinkcentre"]
+
+[[rule]]
+task_type = "active_dev"
+description = "Coding sessions, project scaffolding, agentic work"
+prefer_model = "claude-code"
+prefer_node = "gpd-pocket-4"
+fallback = []
+
+[[rule]]
+task_type = "research"
+description = "Web-connected research, current events, documentation lookup"
+prefer_model = "claude-opus"
+prefer_node = "cloud"
+via = "api"
+fallback = ["kimi-2.5@thinkcentre"]
