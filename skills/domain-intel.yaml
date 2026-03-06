@@ -1,0 +1,87 @@
+# Arbiter OS Skill: domain-intel
+# Installable capability plugin for domain intelligence gathering
+
+name: domain-intel
+version: 0.1.0
+description: "Domain intelligence — WHOIS, DNS, subdomain enumeration, tech stack detection"
+author: Peterc3-dev
+
+# Tool dependencies — these must exist in the Tool Registry
+requires_tools:
+  - code:execute
+  - file:write
+
+# Model preferences — which task types this skill leans on
+requires_models:
+  - task_type: deep_reasoning
+    reason: "Analyzing and correlating recon data"
+
+# Minimum node requirements
+requires:
+  network: true
+  gpu: false
+
+# Workflow steps — executed sequentially
+# Each step calls a tool or model, passing data forward
+workflow:
+  - step: whois_lookup
+    tool: code:execute
+    description: "Run WHOIS query on target domain"
+    command: "whois {{target}}"
+    output_var: whois_result
+
+  - step: dns_records
+    tool: code:execute
+    description: "Enumerate DNS records"
+    command: "dig {{target}} ANY +noall +answer"
+    output_var: dns_result
+
+  - step: subdomain_enum
+    tool: code:execute
+    description: "Subdomain enumeration via subfinder"
+    command: "subfinder -d {{target}} -silent"
+    output_var: subdomains
+
+  - step: tech_detect
+    tool: code:execute
+    description: "Detect web technologies"
+    command: "httpx -u https://{{target}} -tech-detect -silent"
+    output_var: tech_stack
+
+  - step: analyze
+    route: deep_reasoning
+    description: "Correlate and analyze all gathered intelligence"
+    prompt: |
+      Analyze this domain intelligence for {{target}}:
+
+      WHOIS: {{whois_result}}
+      DNS: {{dns_result}}
+      Subdomains: {{subdomains}}
+      Tech Stack: {{tech_stack}}
+
+      Provide:
+      1. Domain ownership summary
+      2. Infrastructure analysis
+      3. Attack surface overview
+      4. Notable findings
+    output_var: analysis
+
+  - step: report
+    tool: file:write
+    description: "Write final report"
+    path: "~/arbiter/reports/domain-intel-{{target}}-{{timestamp}}.md"
+    content: "{{analysis}}"
+
+# Input parameters
+inputs:
+  target:
+    type: string
+    description: "Target domain to investigate"
+    required: true
+    example: "shopify.com"
+
+# Output
+output:
+  type: file
+  description: "Domain intelligence report"
+  var: report

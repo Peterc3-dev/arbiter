@@ -3,13 +3,14 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "arbiter"
-version = "0.1.0"
-description = "Autonomous Routing, Bridging, and Inference Topology for Engineered Reasoning"
+name = "arbiter-os"
+version = "0.2.0"
+description = "Arbiter OS — Distributed Intelligence Operating System for Personal AI Infrastructure"
 requires-python = ">=3.11"
 dependencies = [
     "textual>=0.47.0",
     "rich>=13.0",
+    "pyyaml>=6.0",
 ]
 
 [project.scripts]

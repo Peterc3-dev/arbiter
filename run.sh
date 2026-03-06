@@ -9,8 +9,8 @@ cd "$SCRIPT_DIR"
 
 # Install deps if needed
 if ! python3 -c "import textual" 2>/dev/null; then
-    echo "[arbiter] Installing dependencies..."
-    pip install textual rich --break-system-packages -q
+    echo "[arbiter-os] Installing dependencies..."
+    pip install textual rich pyyaml --break-system-packages -q
 fi
 
 python3 -m arbiter_core.app

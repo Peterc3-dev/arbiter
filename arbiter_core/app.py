@@ -1,8 +1,8 @@
 """
-ARBITER v0.1 — Phase 0 TUI Prototype
+ARBITER OS v0.2 — Distributed Intelligence Operating System
 Autonomous Routing, Bridging, and Inference Topology for Engineered Reasoning
 
-Command fabric for CIN (Centralized Inference Network)
+Intelligence shell for CIN (Centralized Inference Network)
 """
 
 from __future__ import annotations
@@ -28,6 +28,10 @@ from textual.reactive import reactive
 from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
+
+from arbiter_core.tools.registry import load_all_tools, ToolRegistry
+from arbiter_core.process.manager import ProcessManager, ProcessStatus
+from arbiter_core.skills import load_all_skills, Skill
 
 
 # ─── Data Models ───────────────────────────────────────────────────
@@ -279,17 +283,22 @@ class ArbiterApp(App):
     def __init__(self, config_dir: Path | None = None, **kwargs):
         super().__init__(**kwargs)
         self.config_dir = config_dir or Path(__file__).parent.parent / "config"
+        self.skills_dir = self.config_dir.parent / "skills"
         self.nodes = load_nodes(self.config_dir)
         self.rules = load_routing_rules(self.config_dir)
+        self.tool_registry = load_all_tools(self.config_dir)
+        self.process_manager = ProcessManager()
+        self.skills = load_all_skills(self.skills_dir)
         self.context_log: list[ContextEntry] = []
 
     def compose(self) -> ComposeResult:
         node_count = len(self.nodes)
         online_count = sum(1 for n in self.nodes if n.online)
+        tool_count = len(self.tool_registry.tools)
 
         yield Container(
             Static(
-                f"  A R B I T E R  v0.1          CIN: {node_count} nodes  ●  {online_count} online",
+                f"  A R B I T E R  OS v0.2       CIN: {node_count} nodes ● {online_count} online  │  {tool_count} tools",
                 id="title-text",
             ),
             id="title-bar",
@@ -304,15 +313,26 @@ class ArbiterApp(App):
 
     def on_mount(self) -> None:
         ctx = self.query_one("#context-panel", ContextPanel)
-        ctx.write(Text("  C O N T E X T   T H R E A D", style=f"bold {PHOSPHOR}"))
+        ctx.write(Text("  A R B I T E R   O S", style=f"bold {PHOSPHOR}"))
+        ctx.write(Text("  Distributed Intelligence Operating System", style=PHOSPHOR_DIM))
         ctx.write("")
-        self._log_event("system", "Arbiter v0.1 initialized")
-        self._log_event("topology", f"Loaded {len(self.nodes)} node(s) from config")
-        self._log_event("routing", f"Loaded {len(self.rules)} routing rule(s)")
-        ctx.write("")
-        self._log_event("system", "Type 'help' for available commands")
 
-        # Focus the input
+        # Boot sequence
+        self._log_event("init", "Booting Arbiter OS...")
+        self._log_event("init", f"Topology: {len(self.nodes)} node(s)")
+        self._log_event("init", f"Router: {len(self.rules)} routing rule(s)")
+        self._log_event("init", f"Tools: {len(self.tool_registry.tools)} tool(s) in {len(self.tool_registry.all_categories())} categories")
+        self._log_event("init", f"Skills: {len(self.skills)} skill(s) loaded")
+        self._log_event("init", f"Process Manager: ready (run/kill)")
+
+        # Tool summary per node
+        summary = self.tool_registry.summary()
+        for node_name, count in summary.items():
+            self._log_event("tools", f"{node_name}: {count} tools registered")
+
+        ctx.write("")
+        self._log_event("init", "Arbiter OS ready. Type 'help' for commands.")
+
         self.query_one("#command-input", Input).focus()
 
     def _log_event(self, category: str, message: str) -> None:
@@ -320,9 +340,13 @@ class ArbiterApp(App):
         now = datetime.now().strftime("%H:%M:%S")
         cat_colors = {
             "system": "bold #33ff33",
+            "init": "bold #00ffaa",
             "topology": "#1aff1a",
             "routing": "#66ff66",
             "route": "bold #00ff88",
+            "tools": "#33ccff",
+            "skill": "bold #ff9933",
+            "proc": "bold #ffcc00",
             "error": "bold red",
             "ctx": "#33ffaa",
         }
@@ -361,6 +385,10 @@ class ArbiterApp(App):
             "nodes": self._cmd_topology,
             "rules": self._cmd_rules,
             "route": self._cmd_route,
+            "tools": self._cmd_tools,
+            "skills": self._cmd_skills,
+            "ps": self._cmd_ps,
+            "kill": self._cmd_kill,
             "ctx": self._cmd_ctx,
             "briefing": self._cmd_briefing,
             "health": self._cmd_health,
@@ -375,17 +403,106 @@ class ArbiterApp(App):
 
     def _cmd_help(self, args: list[str]) -> None:
         commands = [
+            ("", "── CORE ──"),
             ("help", "Show this message"),
             ("topology", "Show all CIN nodes and status"),
+            ("health", "System health overview"),
+            ("", "── ROUTING ──"),
             ("rules", "Show routing rules"),
-            ("route <type>", "Route a task (code_transform, creative_writing, etc)"),
+            ("route <type>", "Route a task through CIN"),
+            ("", "── OS LAYER ──"),
+            ("tools [node]", "Show tool registry (optionally filter by node)"),
+            ("skills", "Show installed skill plugins"),
+            ("ps", "List running processes"),
+            ("kill <pid>", "Kill a running process"),
+            ("", "── CONTEXT ──"),
             ("ctx", "Show context thread summary"),
             ("briefing", "Generate a briefing snapshot"),
-            ("health", "System health overview"),
             ("clear", "Clear the context panel"),
         ]
         for name, desc in commands:
-            self._log_event("system", f"  {name:18s} {desc}")
+            if not name:
+                self._log_event("system", f"  {desc}")
+            else:
+                self._log_event("system", f"  {name:18s} {desc}")
+
+    def _cmd_tools(self, args: list[str]) -> None:
+        if args:
+            # Filter by node
+            node_name = args[0]
+            tools = self.tool_registry.find_by_node(node_name)
+            if not tools:
+                self._log_event("error", f"No tools found for node '{node_name}'")
+                available_nodes = list(self.tool_registry.summary().keys())
+                self._log_event("tools", f"Nodes with tools: {', '.join(available_nodes)}")
+                return
+            self._log_event("tools", f"── {node_name} ({len(tools)} tools) ──")
+            # Group by category
+            cats: dict[str, list] = {}
+            for t in tools:
+                cats.setdefault(t.category, []).append(t.action)
+            for cat, actions in sorted(cats.items()):
+                perm = tools[0].permission  # same for category
+                self._log_event("tools", f"  {cat}: {', '.join(actions)}  [{perm}]")
+        else:
+            # Show all tools grouped by node
+            summary = self.tool_registry.summary()
+            total = len(self.tool_registry.tools)
+            self._log_event("tools", f"── TOOL REGISTRY ({total} tools) ──")
+            for node_name, count in summary.items():
+                self._log_event("tools", f"  {node_name}: {count} tools")
+                node_tools = self.tool_registry.find_by_node(node_name)
+                cats: dict[str, list] = {}
+                for t in node_tools:
+                    cats.setdefault(t.category, []).append(t.action)
+                for cat, actions in sorted(cats.items()):
+                    self._log_event("tools", f"    {cat}: {', '.join(actions)}")
+
+    def _cmd_skills(self, args: list[str]) -> None:
+        if not self.skills:
+            self._log_event("skill", "No skills installed. Add .yaml files to skills/")
+            return
+        self._log_event("skill", f"── INSTALLED SKILLS ({len(self.skills)}) ──")
+        for skill in self.skills:
+            self._log_event("skill", f"  {skill.name} v{skill.version}")
+            self._log_event("skill", f"    {skill.description}")
+            if skill.requires_tools:
+                self._log_event("skill", f"    requires: {', '.join(skill.requires_tools)}")
+            self._log_event("skill", f"    workflow: {len(skill.workflow)} steps")
+            for i, step in enumerate(skill.workflow, 1):
+                target = step.tool or f"route:{step.route}"
+                self._log_event("skill", f"      {i}. {step.name} → {target}")
+
+    def _cmd_ps(self, args: list[str]) -> None:
+        procs = self.process_manager.all
+        if not procs:
+            self._log_event("proc", "No processes. Use 'route' to dispatch tasks.")
+            return
+        self._log_event("proc", f"── PROCESSES ({len(procs)}) ──")
+        for p in procs:
+            status_color = {
+                ProcessStatus.RUNNING: "#ffcc00",
+                ProcessStatus.COMPLETED: "#33ff33",
+                ProcessStatus.FAILED: "red",
+                ProcessStatus.KILLED: "#ff6633",
+            }.get(p.status, PHOSPHOR_DIM)
+            self._log_event("proc",
+                f"  [{p.pid:03d}] {p.status.value:10s} {p.task_type:20s} "
+                f"{p.node:15s} {p.elapsed_display}")
+
+    def _cmd_kill(self, args: list[str]) -> None:
+        if not args:
+            self._log_event("error", "Usage: kill <pid>")
+            return
+        try:
+            pid = int(args[0])
+        except ValueError:
+            self._log_event("error", f"Invalid PID: {args[0]}")
+            return
+        if self.process_manager.kill(pid):
+            self._log_event("proc", f"Killed process {pid}")
+        else:
+            self._log_event("error", f"Process {pid} not found or not running")
 
     def _cmd_topology(self, args: list[str]) -> None:
         for node in self.nodes:
@@ -437,12 +554,16 @@ class ArbiterApp(App):
 
     def _cmd_briefing(self, args: list[str]) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
-        self._log_event("ctx", f"── BRIEFING SNAPSHOT ({now}) ──")
+        self._log_event("ctx", f"── ARBITER OS BRIEFING ({now}) ──")
         self._log_event("ctx", f"  Nodes: {len(self.nodes)} registered")
         for node in self.nodes:
             status = "online" if node.online else "offline"
             self._log_event("ctx", f"  • {node.name}: {status} / {node.role}")
         self._log_event("ctx", f"  Rules: {len(self.rules)} active")
+        self._log_event("ctx", f"  Tools: {len(self.tool_registry.tools)} across {len(self.tool_registry.summary())} nodes")
+        self._log_event("ctx", f"  Skills: {len(self.skills)} installed")
+        running = self.process_manager.running
+        self._log_event("ctx", f"  Processes: {len(running)} running")
         self._log_event("ctx", f"  Session events: {len(self.context_log)}")
         self._log_event("ctx", "── END BRIEFING ──")
 

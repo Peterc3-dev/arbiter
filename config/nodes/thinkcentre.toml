@@ -24,3 +24,38 @@ syncthing = true
 ssh = true
 openclaw = true
 proton_vpn = true
+
+# ─── Tool Registry ────────────────────────────────────────
+# Each category declares available actions on this node.
+
+[tools.registry.browser]
+actions = ["navigate", "screenshot", "click", "extract"]
+description = "Browser automation via OpenClaw Chrome relay"
+requires_network = true
+permission = "local"
+
+[tools.registry.file]
+actions = ["read", "write", "search", "list", "delete"]
+description = "Filesystem operations"
+permission = "local"
+
+[tools.registry.code]
+actions = ["execute", "lint", "test"]
+description = "Code execution and validation"
+permission = "local"
+
+[tools.registry.ollama]
+actions = ["generate", "chat", "embed", "list_models", "pull"]
+description = "Local LLM inference via Ollama API"
+permission = "local"
+
+[tools.registry.system]
+actions = ["health", "uptime", "disk", "processes"]
+description = "System monitoring and diagnostics"
+permission = "local"
+
+[tools.registry.kimi]
+actions = ["chat", "reason"]
+description = "Kimi 2.5 cloud model via OpenClaw relay"
+requires_network = true
+permission = "cloud"

@@ -25,3 +25,36 @@ claude_code = true
 tailscale = true
 syncthing = true
 ssh = true
+
+# ─── Tool Registry ────────────────────────────────────────
+
+[tools.registry.claude_code]
+actions = ["generate", "edit", "refactor", "explain", "test"]
+description = "Agentic AI coding via Claude Code CLI"
+permission = "local"
+
+[tools.registry.file]
+actions = ["read", "write", "search", "list", "delete"]
+description = "Filesystem operations"
+permission = "local"
+
+[tools.registry.code]
+actions = ["execute", "lint", "test"]
+description = "Code execution and validation"
+permission = "local"
+
+[tools.registry.git]
+actions = ["commit", "push", "pull", "branch", "status", "log"]
+description = "Git version control operations"
+permission = "local"
+
+[tools.registry.github]
+actions = ["create_repo", "push", "issues", "pr"]
+description = "GitHub operations via gh CLI"
+requires_network = true
+permission = "cloud"
+
+[tools.registry.system]
+actions = ["health", "uptime", "disk", "processes"]
+description = "System monitoring and diagnostics"
+permission = "local"
