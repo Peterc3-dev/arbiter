@@ -14,7 +14,7 @@ import asyncio
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Coroutine, Any
+from typing import Coroutine, Any
 
 
 class ProcessStatus(Enum):

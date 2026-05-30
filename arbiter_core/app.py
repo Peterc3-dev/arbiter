@@ -6,30 +6,23 @@ Every device is a node. Every node is aware. The mesh is the OS.
 from __future__ import annotations
 
 import tomllib
-import os
 from pathlib import Path
 from datetime import datetime
 from dataclasses import dataclass, field
 
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical, Container
+from textual.containers import Horizontal, Container
 from textual.widgets import (
-    Header,
-    Footer,
     Static,
     Input,
     RichLog,
-    Label,
 )
 from textual.binding import Binding
-from textual.reactive import reactive
 from rich.text import Text
-from rich.panel import Panel
-from rich.table import Table
 
-from arbiter_core.tools.registry import load_all_tools, ToolRegistry
-from arbiter_core.process.manager import ProcessManager, ProcessStatus
-from arbiter_core.skills import load_all_skills, Skill
+from arbiter_core.tools.registry import load_all_tools
+from arbiter_core.process.manager import ProcessManager
+from arbiter_core.skills import load_all_skills
 
 
 # ─── Data Models ───────────────────────────────────────────────────
@@ -321,7 +314,7 @@ class ArbiterApp(App):
         self._log_event("init", f"Router: {len(self.rules)} routing rule(s)")
         self._log_event("init", f"Tools: {len(self.tool_registry.tools)} tool(s) in {len(self.tool_registry.all_categories())} categories")
         self._log_event("init", f"Skills: {len(self.skills)} skill(s) loaded")
-        self._log_event("init", f"Process Manager: ready (run/kill)")
+        self._log_event("init", "Process Manager: ready (run/kill)")
 
         # Tool summary per node
         summary = self.tool_registry.summary()
@@ -478,12 +471,6 @@ class ArbiterApp(App):
             return
         self._log_event("proc", f"── PROCESSES ({len(procs)}) ──")
         for p in procs:
-            status_color = {
-                ProcessStatus.RUNNING: "#ffcc00",
-                ProcessStatus.COMPLETED: "#33ff33",
-                ProcessStatus.FAILED: "red",
-                ProcessStatus.KILLED: "#ff6633",
-            }.get(p.status, PHOSPHOR_DIM)
             self._log_event("proc",
                 f"  [{p.pid:03d}] {p.status.value:10s} {p.task_type:20s} "
                 f"{p.node:15s} {p.elapsed_display}")
