@@ -334,12 +334,14 @@ arbiter/
 git clone https://github.com/Peterc3-dev/arbiter.git
 cd arbiter
 
-# Option 1: Use the launcher script
+# Option 1: Use the launcher script (creates a local .venv automatically)
 chmod +x run.sh
 ./run.sh
 
-# Option 2: Manual installation
-pip install textual rich --break-system-packages
+# Option 2: Manual installation in a virtualenv
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
 python3 -m arbiter_core.app
 ```
 
@@ -354,7 +356,7 @@ For a proper CIN deployment, you want Arbiter available on every node:
    ```bash
    # On each CIN node:
    git clone https://github.com/Peterc3-dev/arbiter.git ~/arbiter
-   cd ~/arbiter && pip install textual rich --break-system-packages
+   cd ~/arbiter && python3 -m venv .venv && ./.venv/bin/pip install -e .
    ```
 
 3. **Verify**: Run `./run.sh` on any node. You should see the Arbiter TUI with your full
@@ -365,8 +367,11 @@ For a proper CIN deployment, you want Arbiter available on every node:
 Add to your `~/.bashrc` or `~/.zshrc`:
 
 ```bash
-alias arbiter='cd ~/arbiter && python3 -m arbiter_core.app'
+alias arbiter='cd ~/arbiter && ./run.sh'
 ```
+
+After `pip install -e .` the `arbiter` console script is also on your `PATH`
+inside the virtualenv, so `arbiter` works directly once the venv is active.
 
 Now you can launch Arbiter from anywhere with just `arbiter`.
 

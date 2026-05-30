@@ -13,8 +13,23 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5",
+    "pytest>=7.0",
+]
+
 [project.scripts]
 arbiter = "arbiter_core.app:main"
 
 [tool.setuptools.packages.find]
 include = ["arbiter_core*"]
+
+[tool.pytest.ini_options]
+# Pure-logic unit tests (stdlib only) live under tests/unit/ and are what CI
+# runs. The top-level tests/ also contains integration tests that require the
+# full dependency set (textual, rich, pyyaml).
+testpaths = ["tests/unit"]
+
+[tool.ruff]
+extend-exclude = [".venv", "venv"]
